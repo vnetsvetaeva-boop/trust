@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Bai Jamjuree',sans-serif;background:#fff;color:#000;padding:20px 28px;line-height:1.5;max-width:100%;margin:0 auto}
+
+.header{background:linear-gradient(135deg,#80EAFF 0%,#50D0ED 100%);border-radius:12px;padding:22px 26px 18px;margin-bottom:20px}
+.header-eyebrow{font-size:.75rem;font-weight:600;color:rgba(0,60,80,.5);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:4px}
+.header-title{font-size:28px;font-weight:700;color:#0A3D4F;line-height:1.2}
+.header-sub{font-size:16px;color:rgba(0,60,80,.55);margin-top:6px}
+
+.progress{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.progress-bar{flex:1;height:8px;background:#ecedea;border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,#80EAFF,#50D0ED);border-radius:4px;transition:width .3s}
+.progress-text{font-size:14px;font-weight:600;color:#999;white-space:nowrap}
+
+/* buckets on top, as columns */
+.buckets{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:22px;align-items:start}
+.bucket{border:2px dashed #dcdedb;background:#f7f7f5;border-radius:10px;padding:14px;min-height:190px;transition:background .15s,border-color .15s}
+.bucket.over{border-style:solid}
+.bucket-head{display:flex;align-items:center;gap:8px;padding-bottom:12px;margin-bottom:12px;border-bottom:2px solid #ecedea}
+.bucket-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.bucket-title{font-size:18px;font-weight:700}
+.bucket-count{margin-left:auto;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:#999}
+.bucket-list{display:flex;flex-direction:column;gap:10px}
+.bucket-hint{font-size:14px;color:#999;text-align:center;padding:26px 6px}
+
+.b-build .bucket-dot{background:#10B981}
+.b-build.over{border-color:#10B981;background:#ECFDF5}
+.b-erode .bucket-dot{background:#E11D48}
+.b-erode.over{border-color:#E11D48;background:#FFF1F2}
+
+/* pool */
+.pool-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:#999;margin-bottom:8px}
+.pool{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px;min-height:70px;border:2px dashed transparent;border-radius:10px;transition:border-color .15s,background .15s}
+.pool.over{border-color:#80EAFF;background:rgba(128,234,255,.08)}
+.pool-empty{grid-column:1/-1;background:#f7f7f5;border:2px dashed #ecedea;border-radius:10px;padding:14px 16px;font-size:16px;font-weight:500;color:#999;text-align:center}
+
+/* cards */
+.card{display:flex;align-items:flex-start;gap:10px;background:#fff;border:2px solid #ecedea;border-radius:10px;padding:14px 16px;font-size:18px;font-weight:500;line-height:1.4;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;transition:border-color .15s,box-shadow .15s,background .15s}
+.card:hover{border-color:#80EAFF;box-shadow:0 2px 10px rgba(80,208,237,.2)}
+.card.in{font-size:16px;padding:12px 14px}
+.card.selected{border-color:#50D0ED;background:#E0F7FF;box-shadow:0 0 0 4px rgba(128,234,255,.35)}
+.card.ghost,.card.dragging{opacity:.35}
+.card.wrong{border-color:#E11D48;background:#FFF1F2}
+.card.locked{cursor:default;border-color:#10B981;background:#fff;box-shadow:none}
+.card.shake{animation:shake .4s}
+.card-clone{position:fixed;z-index:1000;pointer-events:none;box-shadow:0 10px 28px rgba(0,60,80,.28);transform:rotate(2deg);border-color:#50D0ED;background:#fff;cursor:grabbing}
+.card-text{flex:1}
+.grip{flex-shrink:0;width:14px;height:22px;margin-top:2px;background-image:radial-gradient(#b8bcb8 1.6px,transparent 1.7px);background-size:7px 7px}
+.tick{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:#10B981;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+
+.feedback{background:#f7f7f5;border-left:4px solid #80EAFF;padding:18px 22px;border-radius:0 10px 10px 0;margin-bottom:16px}
+.feedback.ok{border-left-color:#10B981}
+.feedback.no{border-left-color:#E11D48}
+.feedback-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.badge{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;padding:4px 10px;border-radius:5px;background:#E0F7FF;color:#0E7490}
+.feedback.ok .badge{background:#ECFDF5;color:#065F46}
+.feedback.no .badge{background:#FFF1F2;color:#9F1239}
+.feedback-quote{font-size:14px;color:#999;font-weight:500}
+.feedback-text{font-size:18px;font-weight:500;color:#333;line-height:1.6}
+
+.btn{display:block;width:100%;font-family:inherit;font-size:18px;font-weight:700;padding:14px;border-radius:10px;border:none;background:linear-gradient(135deg,#80EAFF 0%,#50D0ED 100%);color:#0A3D4F;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(80,208,237,.4)}
+.hidden{display:none}
+
+@media(max-width:640px){
+  body{padding:16px}
+  .pool,.buckets{grid-template-columns:1fr}
+  .bucket{min-height:110px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Activity</div>
+  <div class="header-title">Builds or Erodes Trust?</div>
+  <div class="header-sub">Drag each card into a column. A wrong card stays marked in red, so you can move it again.</div>
+</div>
+
+<div class="progress">
+  <div class="progress-bar"><div class="progress-fill" id="fill"></div></div>
+  <div class="progress-text" id="ptext">0 / 7 correct</div>
+</div>
+
+<div class="buckets" id="buckets"></div>
+
+<div class="pool-label">Cards to sort</div>
+<div class="pool" id="pool" data-drop="pool"></div>
+
+<div class="feedback" id="feedback"></div>
+
+<button class="btn hidden" id="reset">Try again</button>
+
+<script>
+var CARDS=[
+  {id:1,text:"“I’ll let you know early if a deadline will slip.”",ans:"build",
+   fb:"The team gets time to adjust, and the promise itself becomes something they can rely on."},
+  {id:2,text:"“I’ll look into it” and no follow-up",ans:"erode",
+   fb:"An open promise without a date stays on the other person’s mind. A short update, even “no news yet, next check Wednesday”, closes it."},
+  {id:3,text:"Naming your own mistake in the team channel",ans:"build",
+   fb:"It shows the team how mistakes are handled and removes the need to guess. Keep it factual: what happened, what you are doing about it."},
+  {id:4,text:"“Yes, easily!” said to a stakeholder without checking capacity",ans:"erode",
+   fb:"A fast yes feels helpful in the moment. If the date slips, the stakeholder remembers the promise, not the intention."},
+  {id:5,text:"Mentioning a colleague’s health situation to others",ans:"erode",
+   fb:"Information shared in confidence belongs to the person who shared it. Listeners also learn what happens to their own confidences."},
+  {id:6,text:"Giving the team one reason for a delay and headquarters another",ans:"erode",
+   fb:"Teams compare notes. Two versions of one story weaken both."},
+  {id:8,text:"“I can’t share details yet, and I’ll update you on Thursday.”",ans:"build",
+   fb:"It is honest about the limit and gives a date. People can wait for a reason and a time."}
+];
+var BUCKETS=[
+  {key:"build",title:"Builds trust"},
+  {key:"erode",title:"Erodes trust"}
+];
+var LABEL={build:"Builds trust",erode:"Erodes trust"};
+var INTRO='Drag a card into a column. You will see right away whether it fits and why.';
+
+var poolEl=document.getElementById('pool');
+var bucketsEl=document.getElementById('buckets');
+var fbEl=document.getElementById('feedback');
+var fillEl=document.getElementById('fill');
+var ptextEl=document.getElementById('ptext');
+var resetEl=document.getElementById('reset');
+
+var order,items,locked,wrong,selected,mistakes;
+
+function shuffle(a){
+  a=a.slice();
+  for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
+  return a;
+}
+function byId(id){return CARDS.filter(function(c){return c.id===id})[0];}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+
+function init(){
+  order=shuffle(CARDS.map(function(c){return c.id}));
+  items={build:[],erode:[]};
+  locked={};wrong={};selected=null;mistakes=0;
+  resetEl.classList.add('hidden');
+  setFeedback('','How it works','',INTRO);
+  render();
+}
+
+function whereIs(id){
+  for(var k in items){if(items[k].indexOf(id)>=0)return k;}
+  return 'pool';
+}
+function removeFromAll(id){
+  for(var k in items){var i=items[k].indexOf(id);if(i>=0)items[k].splice(i,1);}
+}
+function lockedCount(){return Object.keys(locked).length;}
+
+function cardHtml(id,inBucket){
+  var cls='card'+(inBucket?' in':'')+(selected===id?' selected':'')+(locked[id]?' locked':'')+(wrong[id]?' wrong':'');
+  var lead=locked[id]?'<span class="tick">✓</span>':'<span class="grip"></span>';
+  return '<div class="'+cls+'" data-id="'+id+'"'+(locked[id]?'':' draggable="true"')+'>'+lead+
+    '<span class="card-text">'+esc(byId(id).text)+'</span></div>';
+}
+
+function render(){
+  var remaining=order.filter(function(id){return whereIs(id)==='pool';});
+  poolEl.innerHTML=remaining.length?remaining.map(function(id){return cardHtml(id,false);}).join('')
+    :'<div class="pool-empty">No cards left to sort</div>';
+
+  bucketsEl.innerHTML=BUCKETS.map(function(b){
+    var list=items[b.key];
+    var body=list.length?list.map(function(id){return cardHtml(id,true);}).join('')
+      :'<div class="bucket-hint">Drop cards here</div>';
+    return '<div class="bucket b-'+b.key+'" data-drop="'+b.key+'">'+
+      '<div class="bucket-head"><div class="bucket-dot"></div><div class="bucket-title">'+b.title+'</div>'+
+      '<div class="bucket-count">'+list.length+'</div></div>'+
+      '<div class="bucket-list">'+body+'</div></div>';
+  }).join('');
+
+  var n=lockedCount();
+  fillEl.style.width=(n/CARDS.length*100)+'%';
+  ptextEl.textContent=n+' / '+CARDS.length+' correct';
+  bindCards();
+}
+
+function setFeedback(cls,badge,quote,text){
+  fbEl.className='feedback'+(cls?' '+cls:'');
+  fbEl.innerHTML='<div class="feedback-top"><div class="badge">'+badge+'</div>'+
+    (quote?'<div class="feedback-quote">'+esc(quote)+'</div>':'')+'</div>'+
+    '<div class="feedback-text">'+text+'</div>';
+}
+
+function clearOver(){
+  document.querySelectorAll('[data-drop]').forEach(function(x){x.classList.remove('over');});
+}
+
+function drop(id,key){
+  var c=byId(id);
+  selected=null;
+  if(locked[id]){render();return;}
+  if(whereIs(id)===key){render();return;}
+  removeFromAll(id);
+  delete wrong[id];
+  if(key==='pool'){
+    setFeedback('','Moved back','','The card is back in the pile. Drag it into a column when you are ready.');
+    render();
+    return;
+  }
+  items[key].push(id);
+  if(c.ans===key){
+    locked[id]=true;
+    setFeedback('ok','Correct — '+LABEL[key],c.text.replace(/[“”]/g,''),esc(c.fb));
+    render();
+    if(lockedCount()===CARDS.length){
+      var msg=mistakes===0?'You sorted every card on the first try.':
+        'You needed '+mistakes+' extra '+(mistakes===1?'move':'moves')+'. Worth a second pass.';
+      setFeedback('ok','All done','','Every card is in the right column. '+msg+' Notice the pattern: trust grows when people know what to expect and when, and erodes when they have to guess.');
+      resetEl.classList.remove('hidden');
+    }
+  }else{
+    wrong[id]=true;
+    mistakes++;
+    setFeedback('no','Not quite','','That card does not belong in “'+LABEL[key]+'”. It stays there, marked in red. Think about what the other person is left with afterwards, then drag it to another column.');
+    render();
+    var el=bucketsEl.querySelector('.card[data-id="'+id+'"]');
+    if(el)el.classList.add('shake');
+  }
+}
+
+function dropTargetAt(x,y){
+  var t=document.elementFromPoint(x,y);
+  return t&&t.closest?t.closest('[data-drop]'):null;
+}
+
+function tapCard(el,id){
+  var inBucket=el.closest('.bucket');
+  if(selected!==null&&selected!==id&&inBucket){
+    drop(selected,inBucket.dataset.drop);
+    return;
+  }
+  selected=(selected===id)?null:id;
+  render();
+}
+
+function bindCards(){
+  document.querySelectorAll('.card:not(.locked)').forEach(function(el){
+    var id=parseInt(el.dataset.id);
+
+    /* mouse: native drag and drop */
+    el.addEventListener('dragstart',function(e){
+      e.dataTransfer.setData('text/plain',String(id));
+      e.dataTransfer.effectAllowed='move';
+      setTimeout(function(){el.classList.add('dragging');},0);
+    });
+    el.addEventListener('dragend',function(){
+      el.classList.remove('dragging');
+      clearOver();
+    });
+    el.addEventListener('click',function(e){
+      e.stopPropagation();
+      if(e.pointerType==='touch'||e.pointerType==='pen')return;
+      tapCard(el,id);
+    });
+
+    /* touch and pen: custom drag */
+    el.addEventListener('pointerdown',function(e){
+      if(e.pointerType==='mouse')return;
+      var sx=e.clientX,sy=e.clientY,dragging=false,clone=null;
+      var rect=el.getBoundingClientRect();
+      var ox=sx-rect.left,oy=sy-rect.top;
+
+      function move(ev){
+        if(!dragging&&Math.abs(ev.clientX-sx)+Math.abs(ev.clientY-sy)>6){
+          dragging=true;
+          clone=el.cloneNode(true);
+          clone.className='card card-clone';
+          clone.style.width=rect.width+'px';
+          document.body.appendChild(clone);
+          el.classList.add('ghost');
+        }
+        if(dragging){
+          clone.style.left=(ev.clientX-ox)+'px';
+          clone.style.top=(ev.clientY-oy)+'px';
+          var tgt=dropTargetAt(ev.clientX,ev.clientY);
+          document.querySelectorAll('[data-drop]').forEach(function(x){x.classList.toggle('over',x===tgt);});
+        }
+      }
+      function up(ev){
+        document.removeEventListener('pointermove',move);
+        document.removeEventListener('pointerup',up);
+        document.removeEventListener('pointercancel',up);
+        if(dragging){
+          var tgt=dropTargetAt(ev.clientX,ev.clientY);
+          clone.remove();
+          clearOver();
+          el.classList.remove('ghost');
+          if(tgt&&ev.type==='pointerup'){drop(id,tgt.dataset.drop);}
+        }else if(ev.type==='pointerup'){
+          tapCard(el,id);
+        }
+      }
+      document.addEventListener('pointermove',move);
+      document.addEventListener('pointerup',up);
+      document.addEventListener('pointercancel',up);
+      e.preventDefault();
+    });
+  });
+}
+
+/* native drop targets: columns and the pile */
+[bucketsEl,poolEl].forEach(function(host){
+  host.addEventListener('dragover',function(e){
+    var t=e.target.closest('[data-drop]');
+    if(!t)return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect='move';
+    document.querySelectorAll('[data-drop]').forEach(function(x){x.classList.toggle('over',x===t);});
+  });
+  host.addEventListener('dragleave',function(e){
+    if(!e.relatedTarget||!e.relatedTarget.closest||!e.relatedTarget.closest('[data-drop]')){clearOver();}
+  });
+  host.addEventListener('drop',function(e){
+    var t=e.target.closest('[data-drop]');
+    if(!t)return;
+    e.preventDefault();
+    clearOver();
+    var id=parseInt(e.dataTransfer.getData('text/plain'));
+    if(id)drop(id,t.dataset.drop);
+  });
+  /* tap a column or the pile while a card is selected */
+  host.addEventListener('click',function(e){
+    if(selected===null)return;
+    var t=e.target.closest('[data-drop]');
+    if(t){drop(selected,t.dataset.drop);}
+  });
+});
+
+resetEl.addEventListener('click',init);
+init();
+</script>
+</body>
+</html>
