@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Bai Jamjuree',sans-serif;background:#fff;color:#000;padding:20px 28px;line-height:1.5;max-width:100%;margin:0 auto}
+
+.header{background:linear-gradient(135deg,#80EAFF 0%,#50D0ED 100%);border-radius:12px;padding:16px 24px 14px;margin-bottom:16px}
+.header-eyebrow{font-size:.75rem;font-weight:600;color:rgba(0,60,80,.5);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:2px}
+.header-title{font-size:28px;font-weight:700;color:#0A3D4F;line-height:1.2}
+
+.steps{display:flex;gap:0;margin-bottom:16px;padding:0 4px}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;cursor:pointer;padding:8px 2px 10px;border-radius:10px;border:none;background:none;font-family:inherit;transition:background .15s}
+.step:hover{background:rgba(128,234,255,.1)}
+.step:focus-visible{outline:2px solid #50D0ED}
+
+.step:not(:last-child)::after{content:'';position:absolute;top:30px;left:calc(50% + 22px);width:calc(100% - 44px);height:2.5px;background:#ecedea;z-index:0}
+.step.linked:not(:last-child)::after{background:#80EAFF}
+
+.step-circle{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;position:relative;z-index:1;transition:all .2s}
+.step-circle.off{background:#f4f4f3;color:#aaa;border:2px solid #ecedea}
+.step-circle.on{background:#80EAFF;color:#0A3D4F;border:2.5px solid #50D0ED}
+.step-circle.sel{box-shadow:0 0 0 5px rgba(128,234,255,.35);transform:scale(1.12)}
+
+.step-label{font-size:16px;font-weight:600;color:#999;text-align:center;margin-top:8px;line-height:1.3}
+.step.on .step-label{color:#000}
+.step.cur .step-label{font-weight:700}
+
+.badge{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;padding:4px 10px;border-radius:5px;background:#E0F7FF;color:#0E7490}
+.step .badge{margin-top:4px;letter-spacing:.4px;padding:3px 8px}
+
+.detail{background:#f7f7f5;border-left:4px solid #80EAFF;padding:18px 24px 20px;border-radius:0 10px 10px 0}
+.detail-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.detail-num{width:32px;height:32px;border-radius:50%;background:#80EAFF;color:#0A3D4F;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.detail-title{font-size:22px;font-weight:700;color:#000}
+.detail-header .badge{margin-left:auto}
+.detail-text{font-size:18px;font-weight:500;color:#333;line-height:1.6}
+
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.chip{background:#fff;border:1.5px solid #ecedea;border-radius:10px;padding:12px 16px;font-size:18px;font-weight:600;color:#000;cursor:pointer;font-family:inherit;transition:border-color .15s,background .15s}
+.chip:hover{border-color:#50D0ED}
+.chip.on{background:#E0F7FF;border-color:#50D0ED;color:#0A3D4F}
+.chip:focus-visible{outline:2px solid #50D0ED}
+
+.comp{margin-top:14px;min-height:150px}
+.comp-def{font-size:18px;font-weight:500;color:#333;line-height:1.6}
+.example{background:#fff;border:1px solid #ecedea;border-radius:10px;padding:12px 16px;margin-top:12px}
+.example-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:#0E7490;margin-bottom:2px}
+.example-text{font-size:16px;font-weight:500;color:#333;line-height:1.55}
+.hint{font-size:14px;color:#999}
+
+.next{display:inline-block;margin-top:12px;font-size:16px;font-weight:600;color:#0E7490;background:none;border:none;cursor:pointer;font-family:inherit;padding:0}
+.next:hover{text-decoration:underline}
+
+@media(max-width:520px){
+  body{padding:16px}
+  .step-label{font-size:14px}
+  .step .badge{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Manager competencies</div>
+  <div class="header-title">From Self to Results</div>
+</div>
+
+<div class="steps" id="steps"></div>
+<div id="detail"></div>
+
+<script>
+var S=[
+ {name:'Self',tag:'Lead yourself',
+  desc:'It starts with you. Before leading others, a manager earns trust, copes with uncertainty and adapts to the situation.',
+  comps:[
+   {n:'Instills Trust',
+    d:'Gains the confidence of others through honesty, consistency and keeping commitments.',
+    e:'A manager admits a mistake in front of the team, explains how it will be fixed, and then follows through.'},
+   {n:'Manages Ambiguity',
+    d:'Stays effective when information is incomplete, priorities shift or the path is unclear.',
+    e:'Strategy changes mid-quarter. The manager tells the team what is known, what is not, and sets the next step anyway.'},
+   {n:'Situational Adaptability',
+    d:'Adjusts style and approach to fit the person, the task and the circumstances.',
+    e:'Gives a new hire detailed guidance, while giving an experienced specialist room to decide.'}
+  ]},
+ {name:'Thought',tag:'Think clearly',
+  desc:'Next, clear thinking. Sound decisions and a global view turn self-awareness into good judgment.',
+  comps:[
+   {n:'Decision Quality',
+    d:'Makes timely, well-reasoned decisions using data, judgment and the input of others.',
+    e:'Compares options against clear criteria, consults the team, and decides by the deadline.'},
+   {n:'Global Perspective',
+    d:'Takes into account different cultures, markets and viewpoints when working and deciding.',
+    e:'Plans a cross-regional launch with local holidays, time zones and communication norms in mind.'}
+  ]},
+ {name:'People',tag:'Work with others',
+  desc:'Then, the people around you. Strong teams and healthy handling of conflict turn good thinking into joint action.',
+  comps:[
+   {n:'Builds Effective Teams',
+    d:'Brings together the right talent and creates shared purpose, clear roles and mutual support.',
+    e:'In a newly formed cross-regional team, clarifies roles and goals in the first week.'},
+   {n:'Manages Conflict',
+    d:'Addresses disagreements early and steers them toward a constructive solution.',
+    e:'Two colleagues clash over priorities. The manager hears both sides, finds the shared goal and agrees next steps.'}
+  ]},
+ {name:'Results',tag:'Deliver',
+  desc:'Finally, delivery. A manager plans, directs the work and holds people to their commitments so that things get done.',
+  comps:[
+   {n:'Plans and Aligns',
+    d:'Sets goals, plans the work and connects it to wider team and company priorities.',
+    e:'Breaks a quarterly objective into milestones and shows how each one supports company goals.'},
+   {n:'Directs Work',
+    d:'Assigns tasks, clarifies expectations and makes sure people have what they need to deliver.',
+    e:'Delegates a project with a clear outcome, a deadline and a defined scope of decision-making.'},
+   {n:'Ensures Accountability',
+    d:'Holds self and others to agreed commitments and standards.',
+    e:'Runs regular check-ins on agreed deliverables and addresses a missed deadline promptly and fairly.'}
+  ]}
+];
+
+var sel=0,comp=null;
+
+function render(){
+  var stepsEl=document.getElementById('steps');
+  var detailEl=document.getElementById('detail');
+
+  stepsEl.innerHTML=S.map(function(s,i){
+    var on=i<=sel;
+    var cls='step'+(on?' on':'')+(i<sel?' linked':'')+(i===sel?' cur':'');
+    var circ='step-circle '+(on?'on':'off')+(i===sel?' sel':'');
+    return '<button class="'+cls+'" data-step="'+i+'" aria-label="Step '+(i+1)+': '+s.name+'">'+
+      '<div class="'+circ+'">'+(i+1)+'</div>'+
+      '<div class="step-label">'+s.name+'</div>'+
+      '<div class="badge">'+s.comps.length+' competencies</div>'+
+    '</button>';
+  }).join('');
+
+  var s=S[sel];
+  var chips=s.comps.map(function(c,j){
+    return '<button class="chip'+(j===comp?' on':'')+'" data-comp="'+j+'">'+c.n+'</button>';
+  }).join('');
+
+  var compHtml;
+  if(comp===null){
+    compHtml='<div class="hint">Click a competency to see what it means and how it looks in practice.</div>';
+  }else{
+    var c=s.comps[comp];
+    compHtml='<div class="comp-def">'+c.d+'</div>'+
+      '<div class="example"><div class="example-label">Manager in action</div><div class="example-text">'+c.e+'</div></div>';
+  }
+
+  var next=(sel<S.length-1)?'<button class="next" data-step="'+(sel+1)+'">Next: '+S[sel+1].name+' \u2192</button>':'';
+
+  detailEl.innerHTML=
+    '<div class="detail">'+
+      '<div class="detail-header">'+
+        '<div class="detail-num">'+(sel+1)+'</div>'+
+        '<div class="detail-title">'+s.name+'</div>'+
+        '<div class="badge">'+s.tag+'</div>'+
+      '</div>'+
+      '<div class="detail-text">'+s.desc+'</div>'+
+      '<div class="chips">'+chips+'</div>'+
+      '<div class="comp">'+compHtml+next+'</div>'+
+    '</div>';
+}
+
+document.addEventListener('click',function(e){
+  var st=e.target.closest('[data-step]');
+  if(st){sel=parseInt(st.dataset.step);comp=null;render();return;}
+  var cp=e.target.closest('[data-comp]');
+  if(cp){comp=parseInt(cp.dataset.comp);render();}
+});
+
+render();
+</script>
+</body>
+</html>
